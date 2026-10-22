@@ -1,6 +1,6 @@
-# Cannon Lab ⭐
+# Cannon Simulator ⭐
 
-Cannon Lab is an interactive projectile-motion simulator built with p5.js. Adjust the launch conditions, compare two physics models, and test whether a shot reaches its target.
+Cannon simulator is an interactive projectile-motion simulator built with p5.js. Adjust the launch conditions, compare two physics models, and test whether a shot reaches its target.
 
 **If the simulator does not fill the screen, please zoom in using your browser settings (ex. Cmd + "+")**
 
