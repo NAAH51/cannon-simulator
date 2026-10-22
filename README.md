@@ -2,6 +2,8 @@
 
 Cannon Lab is an interactive projectile-motion simulator built with p5.js. Adjust the launch conditions, compare two physics models, and test whether a shot reaches its target.
 
+**If the simulator does not fill the screen, please zoom in using your browser settings (ex. Cmd + "+")**
+
 ## CONGRESSIONAL APP CHALLENGE
 
 This website will be submitted for the Congressional App Challenge for District 1 of Ohio
