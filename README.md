@@ -26,7 +26,7 @@ The 45° result is a useful starting point for ideal motion on level ground with
 
 ## Run the simulator
 
-SIMPLY GO TO https://naah51.github.io/cannon-sim-/
+SIMPLY GO TO https://naah51.github.io/cannon-simulator/
 
 ## Controls
 
