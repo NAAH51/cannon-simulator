@@ -1,4 +1,4 @@
-# Cannon Lab
+# Cannon Lab ⭐
 
 Cannon Lab is an interactive projectile-motion simulator built with p5.js. Adjust the launch conditions, compare two physics models, and test whether a shot reaches its target.
 
