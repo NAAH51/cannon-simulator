@@ -25,10 +25,9 @@ let castleHit = false;
 let castleVisible = true;
 let dragCoefficient = 0;
 let predictedRange = 0;
-let predictedHeight = 0;
 let flightDuration = 0;
-let peakTime = 0;
-let showVectors = true;
+let previousX = 0;
+let previousH = 0;
 
 let CANNON_BASE_X = 195;
 let CANNON_PIVOT_Y_M = 4;
@@ -43,81 +42,67 @@ function setup() {
   frameRate(240);
 
   velocityInput = createInput("20");
-  velocityInput.position(10, 220);
-  velocityInput.position(10, 142);
+  velocityInput.position(10, 118);
   velocityInput.size(44, 18);
 
   angleInput = createInput("35");
-  angleInput.position(10, 255);
-  angleInput.position(10, 172);
+  angleInput.position(10, 146);
   angleInput.size(44, 18);
 
   windInput = createInput("0");
-  windInput.position(10, 280);
-  windInput.position(10, 202);
+  windInput.position(10, 174);
   windInput.size(44, 18);
 
   gravityInput = createInput("9.8");
-  gravityInput.position(10, 310);
-  gravityInput.position(10, 232);
+  gravityInput.position(10, 202);
   gravityInput.size(44, 18);
 
   dragInput = createInput("0.02");
-  dragInput.position(10, 338);
-  dragInput.position(10, 262);
+  dragInput.position(10, 230);
   dragInput.size(44, 18);
 
   modelSelect = createSelect();
-  modelSelect.position(10, 366);
-  modelSelect.position(10, 292);
-  modelSelect.size(86, 20);
+  modelSelect.position(62, 254);
+  modelSelect.size(76, 20);
   modelSelect.option("Ideal", "ideal");
   modelSelect.option("Air drag", "drag");
 
   myInput = createInput();
-  myInput.position(10, 398);
-  myInput.position(10, 322);
+  myInput.position(10, 294);
   myInput.size(44, 18);
 
   targetInput = createInput("50,0");
-  targetInput.position(10, 458);
-  targetInput.position(10, 414);
+  targetInput.position(10, 357);
   targetInput.size(44, 18);
 
   lineButton = createButton("ADD LINE");
-  lineButton.position(10, 417);
-  lineButton.position(62, 321);
-  lineButton.size(70, 17);
+  lineButton.position(62, 294);
+  lineButton.size(70, 20);
   lineButton.mousePressed(toggleLine);
 
   moveTargetButton = createButton("MOVE CASTLE");
-  moveTargetButton.position(10, 483);
-  moveTargetButton.position(10, 438);
+  moveTargetButton.position(10, 386);
   moveTargetButton.size(103, 22);
   moveTargetButton.mousePressed(moveCastle);
 
   resetTargetButton = createButton("RESET CASTLE");
-  resetTargetButton.position(10, 506);
-  resetTargetButton.position(10, 462);
+  resetTargetButton.position(10, 411);
   resetTargetButton.size(108, 22);
   resetTargetButton.mousePressed(resetCastle);
 
   toggleCastleButton = createButton("TOGGLE CASTLE");
-  toggleCastleButton.position(10, 529);
-  toggleCastleButton.position(10, 486);
+  toggleCastleButton.position(10, 436);
   toggleCastleButton.size(112, 22);
   toggleCastleButton.mousePressed(toggleCastle);
 
-  pauseButton = createButton("Pause / Resume");
-  pauseButton.position(10, height - 110);
-  pauseButton.position(10, height - 55);
-  pauseButton.size(112, 22);
+  pauseButton = createButton("Pause");
+  pauseButton.position(8, height - 42);
+  pauseButton.size(82, 22);
   pauseButton.mousePressed(togglePause);
 
   runButton = createButton("Run");
-  runButton.position(10, height - 85);
-  runButton.position(86, height - 55);
-  runButton.size(46, 22);
+  runButton.position(98, height - 42);
+  runButton.size(42, 22);
   runButton.mousePressed(toggleRun);
 
   styleMenuControls();
@@ -223,6 +208,8 @@ function styleMenuControls() {
   }
 
   resetTargetButton.style("background", "#2f6f48");
+  lineButton.style("font-size", "8px");
+  lineButton.style("line-height", "20px");
   pauseButton.style("background", "#4d7fbb");
   runButton.style("background", "#2b9b4b");
 }
@@ -585,6 +572,7 @@ function toggleLine() {
 function togglePause() {
   if (shot == "aimed") {
     paused = !paused;
+    pauseButton.html(paused ? "Resume" : "Pause");
   }
 }
 
@@ -599,6 +587,7 @@ function toggleRun() {
   maxHeightH = 0;
   maxHeightX_canvas = 0;
   paused = false;
+  pauseButton.html("Pause");
   shot = "aiming";
   t = 0;
   SCALE = BASE_SCALE;
@@ -621,9 +610,7 @@ function toggleRun() {
   let forecast = simulateForecast(initialy, xv, yv_init, w, g, dragCoefficient);
   let landing_x_m = forecast.range;
   predictedRange = forecast.range;
-  predictedHeight = forecast.maxHeight;
   flightDuration = forecast.time;
-  peakTime = forecast.peakTime;
   let maxProjectileHeight = forecast.maxHeight;
 
   let castleCoords = parsePair(targetInput.value());
@@ -640,6 +627,9 @@ function toggleRun() {
   let finalGeo = getCannonGeometry(ang);
   LAUNCH_PX = finalGeo.tipX;
   initialy = (groundY() - finalGeo.tipY) / SCALE;
+  forecast = simulateForecast(initialy, xv, yv_init, w, g, dragCoefficient);
+  predictedRange = forecast.range;
+  flightDuration = forecast.time;
 
   x = initialx;
   h = initialy;
@@ -675,7 +665,6 @@ function simulateForecast(startHeight, vx0, vy0, wind, gravity, drag) {
   let vy = vy0;
   let elapsed = 0;
   let highest = py;
-  let highestAt = 0;
   let step = 0.005;
   while (elapsed < 300 && py >= 0) {
     let speed = sqrt(vx * vx + vy * vy);
@@ -684,26 +673,18 @@ function simulateForecast(startHeight, vx0, vy0, wind, gravity, drag) {
     px += vx * step;
     py += vy * step;
     elapsed += step;
-    if (py > highest) {
-      highest = py;
-      highestAt = elapsed;
-    }
+    if (py > highest) highest = py;
   }
-  return { range: px, maxHeight: highest, time: elapsed, peakTime: highestAt };
+  return { range: px, maxHeight: highest, time: elapsed };
 }
 
 function snapToGroundIfNeeded() {
   if (h >= 0) return;
-
-  let g = getGravity();
-  let w = getWindAcceleration();
-  let disc = yv_init * yv_init + 2 * g * initialy;
-
-  if (disc >= 0) {
-    let t_land = (yv_init + sqrt(disc)) / g;
-    x = xv * t_land + 0.5 * w * t_land * t_land;
+  let span = previousH - h;
+  if (span > 0) {
+    let progress = constrain(previousH / span, 0, 1);
+    x = previousX + (x - previousX) * progress;
   }
-
   h = 0;
 }
 
@@ -771,100 +752,62 @@ function drawLabels() {
   rect(0, 0, 150, height);
 
   fill(226, 232, 224);
-  rect(7, 8, 136, 70, 6);
+  rect(7, 8, 136, 68, 6);
   fill(35);
   textSize(12);
   textStyle(BOLD);
   text("Cannon Lab", 15, 27);
   textStyle(NORMAL);
   textSize(8);
-  text("Aim and break the castle.", 15, 44, 118, 28);
+  text("Compare ideal and air drag. Blue arrow shows velocity.", 15, 43, 120, 28);
 
   fill(220, 226, 218);
-  rect(7, 116, 136, 268, 6);
-  rect(7, 116, 136, 248, 6);
+  rect(7, 88, 136, 234, 6);
   fill(45);
   textSize(8);
   textStyle(BOLD);
-  text("SHOT SETTINGS", 15, 129);
+  text("SHOT SETTINGS", 15, 104);
   textStyle(NORMAL);
-  text("Velocity (m/s)", 56, 148);
-  text("Angle (deg)", 56, 178);
-  text("Wind accel", 56, 206);
-  text("(m/s²)", 56, 216);
-  text("Gravity (m/s²)", 56, 238);
-  text("Drag k", 56, 350);
-  text("Physics model", 56, 380);
-  text("Line X,Y (m)", 56, 431);
-  text("Drag k", 56, 278);
-  text("Physics model", 56, 308);
-  text("Line X,Y (m)", 56, 338);
+  text("Velocity (m/s)", 56, 132);
+  text("Angle (deg)", 56, 160);
+  text("Wind (m/s²)", 56, 188);
+  text("Gravity (m/s²)", 56, 216);
+  text("Drag k", 56, 244);
+  text("Model", 15, 270);
+  text("Reference line X,Y (m)", 15, 287);
 
   fill(220, 226, 218);
-  rect(7, 402, 136, 70, 6);
-  rect(7, 382, 136, 106, 6);
+  rect(7, 332, 136, 140, 6);
   fill(45);
   textStyle(BOLD);
-  text("CASTLE", 15, 419);
-  text("CASTLE", 15, 399);
+  text("CASTLE", 15, 348);
   textStyle(NORMAL);
-  text("Castle X,Y (m)", 56, 460);
-  text("Castle X,Y (m)", 56, 430);
+  text("Castle X,Y (m)", 56, 371);
 
   fill(226, 232, 224);
-  rect(7, 480, 136, 120, 6);
-  rect(7, 502, 136, 98, 6);
+  rect(7, 482, 136, 148, 6);
   fill(35);
   textStyle(BOLD);
-  text("LEARN", 15, 497);
-  text("LEARN", 15, 519);
-  textStyle(NORMAL);
-  text(
-    "Blue arrow = velocity. Compare air drag with ideal motion. Forecast gives range, peak height and airtime. Reference line marks X,Y.",
-    15,
-    514,
-    536,
-    120,
-    76
-    58
-  );
+  text("SHOT DATA", 15, 498);
 }
 
 function drawHud() {
-  fill(150);
-  noStroke();
-  rect(0, height - 135, 150, 70);
-  rect(0, height - 135, 150, 54);
-
-  fill(0);
+  fill(45);
   textSize(8);
-  text("Distance:   " + x.toFixed(1) + " m", 5, height - 120);
-  text("Height:     " + h.toFixed(1) + " m", 5, height - 107);
-  text("Max height: " + maxHeightH.toFixed(1) + " m", 5, height - 94);
-  text("Speed:      " + sqrt(xv * xv + yv_init * yv_init).toFixed(1) + " m/s", 5, height - 81);
-  text("Distance: " + x.toFixed(1) + " m", 5, height - 120);
-  text("Height: " + h.toFixed(1) + " m   Speed: " + sqrt(xv * xv + yv_init * yv_init).toFixed(1) + " m/s", 5, height - 106);
-  text("Peak: " + maxHeightH.toFixed(1) + " m", 5, height - 92);
-  if (shot === "landed") {
-    text("Flight: " + flightDuration.toFixed(1) + " s", 5, height - 68);
-    text("Forecast: " + predictedRange.toFixed(1) + " m", 5, height - 55);
-    text("Time: " + flightDuration.toFixed(1) + " s  Forecast: " + predictedRange.toFixed(1) + " m", 5, height - 78);
-  }
-
-  if (castleHit) {
-    text("Castle: HIT", 5, height - 81);
-    text("Castle: HIT", 80, height - 92);
-  }
-
-  if (paused) {
-    fill(200, 0, 0);
-    text("PAUSED", 80, height - 81);
-    text("PAUSED", 5, height - 78);
-  }
+  let active = shot !== "no";
+  let speed = active ? sqrt(xv * xv + yv_init * yv_init) : 0;
+  let status = shot === "no" ? "Ready" : paused ? "Paused" : shot === "landed" ? (castleHit ? "Castle hit" : "Landed") : "In flight";
+  text("Status: " + status, 15, 514);
+  text("Range: " + (active ? x.toFixed(1) + " m" : "--"), 15, 530);
+  text("Height: " + (active ? h.toFixed(1) + " m" : "--"), 15, 546);
+  text("Peak: " + (active ? maxHeightH.toFixed(1) + " m" : "--"), 15, 562);
+  text("Forecast: " + (active ? predictedRange.toFixed(1) + " m" : "--"), 15, 578);
+  text("Speed: " + (active ? speed.toFixed(1) + " m/s" : "--"), 15, 594);
+  text("Time: " + (active ? t.toFixed(1) + " s (est. " + flightDuration.toFixed(1) + ")" : "--"), 15, 610);
 }
 
 function drawVelocityVector(px, py) {
-  if (!showVectors || shot !== "aimed") return;
+  if (shot !== "aimed") return;
   let vx = xv;
   let vy = yv_init;
   let factor = 2.2;
@@ -939,8 +882,12 @@ function draw() {
   }
 
   if (shot == "aimed") {
-    computePosition();
-    snapToGroundIfNeeded();
+    if (!paused) {
+      previousX = x;
+      previousH = h;
+      computePosition();
+      snapToGroundIfNeeded();
+    }
 
     let xp = screenX(x);
     let yp = screenY(h);
@@ -959,8 +906,6 @@ function draw() {
         makeExplosion(xp, yp, 55, color(255, 120, 0));
         shot = "landed";
       } else {
-        t += 1 / frameRate();
-
         if (h <= 0 && t > 0.1) {
           makeExplosion(xp, groundY(), 35, color(255, 90, 0));
           shot = "landed";
@@ -972,8 +917,6 @@ function draw() {
         }
       }
     }
-
-    drawHud();
   }
 
   if (trail.length > 1) {
@@ -1010,18 +953,6 @@ function draw() {
     line(maxHeightX_canvas, groundY(), maxHeightX_canvas, screenY(maxHeightH));
     pop();
 
-    fill(150);
-    noStroke();
-    rect(0, height - 135, 150, 70);
-
-    fill(0);
-    textSize(8);
-    text("Distance:   " + x.toFixed(1) + " m", 5, height - 120);
-    text("Max height: " + maxHeightH.toFixed(1) + " m", 5, height - 107);
-
-    if (castleHit) {
-      text("Castle: HIT", 5, height - 94);
-    }
   }
 
   if (makeline) {
@@ -1046,4 +977,6 @@ function draw() {
     text("X: " + mx.toFixed(1) + " m   Y: " + my.toFixed(1) + " m", 157, 22);
     pop();
   }
+
+  drawHud();
 }
