@@ -44,65 +44,79 @@ function setup() {
 
   velocityInput = createInput("20");
   velocityInput.position(10, 220);
+  velocityInput.position(10, 142);
   velocityInput.size(44, 18);
 
   angleInput = createInput("35");
   angleInput.position(10, 255);
+  angleInput.position(10, 172);
   angleInput.size(44, 18);
 
   windInput = createInput("0");
   windInput.position(10, 280);
+  windInput.position(10, 202);
   windInput.size(44, 18);
 
   gravityInput = createInput("9.8");
   gravityInput.position(10, 310);
+  gravityInput.position(10, 232);
   gravityInput.size(44, 18);
 
   dragInput = createInput("0.02");
   dragInput.position(10, 338);
+  dragInput.position(10, 262);
   dragInput.size(44, 18);
 
   modelSelect = createSelect();
   modelSelect.position(10, 366);
+  modelSelect.position(10, 292);
   modelSelect.size(86, 20);
   modelSelect.option("Ideal", "ideal");
   modelSelect.option("Air drag", "drag");
 
   myInput = createInput();
   myInput.position(10, 398);
+  myInput.position(10, 322);
   myInput.size(44, 18);
 
   targetInput = createInput("50,0");
   targetInput.position(10, 458);
+  targetInput.position(10, 414);
   targetInput.size(44, 18);
 
   lineButton = createButton("ADD LINE");
   lineButton.position(10, 417);
+  lineButton.position(62, 321);
   lineButton.size(70, 17);
   lineButton.mousePressed(toggleLine);
 
   moveTargetButton = createButton("MOVE CASTLE");
   moveTargetButton.position(10, 483);
+  moveTargetButton.position(10, 438);
   moveTargetButton.size(103, 22);
   moveTargetButton.mousePressed(moveCastle);
 
   resetTargetButton = createButton("RESET CASTLE");
   resetTargetButton.position(10, 506);
+  resetTargetButton.position(10, 462);
   resetTargetButton.size(108, 22);
   resetTargetButton.mousePressed(resetCastle);
 
   toggleCastleButton = createButton("TOGGLE CASTLE");
   toggleCastleButton.position(10, 529);
+  toggleCastleButton.position(10, 486);
   toggleCastleButton.size(112, 22);
   toggleCastleButton.mousePressed(toggleCastle);
 
   pauseButton = createButton("Pause / Resume");
   pauseButton.position(10, height - 110);
+  pauseButton.position(10, height - 55);
   pauseButton.size(112, 22);
   pauseButton.mousePressed(togglePause);
 
   runButton = createButton("Run");
   runButton.position(10, height - 85);
+  runButton.position(86, height - 55);
   runButton.size(46, 22);
   runButton.mousePressed(toggleRun);
 
@@ -768,6 +782,7 @@ function drawLabels() {
 
   fill(220, 226, 218);
   rect(7, 116, 136, 268, 6);
+  rect(7, 116, 136, 248, 6);
   fill(45);
   textSize(8);
   textStyle(BOLD);
@@ -781,27 +796,37 @@ function drawLabels() {
   text("Drag k", 56, 350);
   text("Physics model", 56, 380);
   text("Line X,Y (m)", 56, 431);
+  text("Drag k", 56, 278);
+  text("Physics model", 56, 308);
+  text("Line X,Y (m)", 56, 338);
 
   fill(220, 226, 218);
   rect(7, 402, 136, 70, 6);
+  rect(7, 382, 136, 106, 6);
   fill(45);
   textStyle(BOLD);
   text("CASTLE", 15, 419);
+  text("CASTLE", 15, 399);
   textStyle(NORMAL);
   text("Castle X,Y (m)", 56, 460);
+  text("Castle X,Y (m)", 56, 430);
 
   fill(226, 232, 224);
   rect(7, 480, 136, 120, 6);
+  rect(7, 502, 136, 98, 6);
   fill(35);
   textStyle(BOLD);
   text("LEARN", 15, 497);
+  text("LEARN", 15, 519);
   textStyle(NORMAL);
   text(
     "Blue arrow = velocity. Compare air drag with ideal motion. Forecast gives range, peak height and airtime. Reference line marks X,Y.",
     15,
     514,
+    536,
     120,
     76
+    58
   );
 }
 
@@ -809,6 +834,7 @@ function drawHud() {
   fill(150);
   noStroke();
   rect(0, height - 135, 150, 70);
+  rect(0, height - 135, 150, 54);
 
   fill(0);
   textSize(8);
@@ -816,18 +842,24 @@ function drawHud() {
   text("Height:     " + h.toFixed(1) + " m", 5, height - 107);
   text("Max height: " + maxHeightH.toFixed(1) + " m", 5, height - 94);
   text("Speed:      " + sqrt(xv * xv + yv_init * yv_init).toFixed(1) + " m/s", 5, height - 81);
+  text("Distance: " + x.toFixed(1) + " m", 5, height - 120);
+  text("Height: " + h.toFixed(1) + " m   Speed: " + sqrt(xv * xv + yv_init * yv_init).toFixed(1) + " m/s", 5, height - 106);
+  text("Peak: " + maxHeightH.toFixed(1) + " m", 5, height - 92);
   if (shot === "landed") {
     text("Flight: " + flightDuration.toFixed(1) + " s", 5, height - 68);
     text("Forecast: " + predictedRange.toFixed(1) + " m", 5, height - 55);
+    text("Time: " + flightDuration.toFixed(1) + " s  Forecast: " + predictedRange.toFixed(1) + " m", 5, height - 78);
   }
 
   if (castleHit) {
     text("Castle: HIT", 5, height - 81);
+    text("Castle: HIT", 80, height - 92);
   }
 
   if (paused) {
     fill(200, 0, 0);
     text("PAUSED", 80, height - 81);
+    text("PAUSED", 5, height - 78);
   }
 }
 
