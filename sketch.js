@@ -894,7 +894,7 @@ function drawLabels() {
   fill(35);
   textSize(18);
   textStyle(BOLD);
-  text("Cannon Lab", 18, 35);
+  text("Cannon Simulator", 18, 35);
   textStyle(NORMAL);
   textSize(11);
   text("Projectile motion lab", 18, 55);
